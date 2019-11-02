@@ -84,7 +84,7 @@ def create_dataloader(logger):
         test_loader = None
     return train_loader, test_loader
 
-
+# done
 def create_optimizer(model):
 
     if cfg.TRAIN.OPTIMIZER == 'adam':
@@ -116,7 +116,7 @@ def create_optimizer(model):
 
     return optimizer
 
-
+# done
 def create_scheduler(optimizer, total_steps, last_epoch):
     def lr_lbmd(cur_epoch):
         cur_decay = 1

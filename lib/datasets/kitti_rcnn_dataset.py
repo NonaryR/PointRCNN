@@ -15,7 +15,7 @@ class KittiRCNNDataset(KittiDataset):
                  rcnn_eval_feature_dir=None, gt_database_dir=None):
         super().__init__(root_dir=root_dir, split=split)
         if classes == 'Car':
-            self.classes = ('Background', 'Car')
+            self.classes = ('Background', 'car')
             aug_scene_root_dir = os.path.join(root_dir, 'KITTI', 'aug_scene')
         elif classes == 'People':
             self.classes = ('Background', 'Pedestrian', 'Cyclist')
@@ -25,6 +25,8 @@ class KittiRCNNDataset(KittiDataset):
         elif classes == 'Cyclist':
             self.classes = ('Background', 'Cyclist')
             aug_scene_root_dir = os.path.join(root_dir, 'KITTI', 'aug_scene_cyclist')
+        elif classes == 'all':
+            self.classes = ("animal", "bicycle", "bus", "car", "emergency_vehicle", "motorcycle", "other_vehicle", "pedestiran", "truck")
         else:
             assert False, "Invalid classes: %s" % classes
 
@@ -58,7 +60,7 @@ class KittiRCNNDataset(KittiDataset):
         if not self.random_select:
             self.logger.warning('random select is False')
 
-        assert mode in ['TRAIN', 'EVAL', 'TEST'], 'Invalid mode: %s' % mode
+        assert mode in ['TRAIN', 'EVAL', 'TEST'], f'Invalid mode: {mode}'
         self.mode = mode
 
         if cfg.RPN.ENABLED:
@@ -82,12 +84,12 @@ class KittiRCNNDataset(KittiDataset):
             if mode == 'TRAIN':
                 self.preprocess_rpn_training_data()
             else:
-                self.sample_id_list = [int(sample_id) for sample_id in self.image_idx_list]
+                self.sample_id_list = [sample_id for sample_id in self.image_idx_list]
                 self.logger.info('Load testing samples from %s' % self.imageset_dir)
                 self.logger.info('Done: total test samples %d' % len(self.sample_id_list))
         elif cfg.RCNN.ENABLED:
             for idx in range(0, self.num_sample):
-                sample_id = int(self.image_idx_list[idx])
+                sample_id = self.image_idx_list[idx]
                 obj_list = self.filtrate_objects(self.get_label(sample_id))
                 if len(obj_list) == 0:
                     # logger.info('No gt classes: %06d' % sample_id)
@@ -104,7 +106,7 @@ class KittiRCNNDataset(KittiDataset):
         """
         self.logger.info('Loading %s samples from %s ...' % (self.mode, self.label_dir))
         for idx in range(0, self.num_sample):
-            sample_id = int(self.image_idx_list[idx])
+            sample_id = self.image_idx_list[idx]
             obj_list = self.filtrate_objects(self.get_label(sample_id))
             if len(obj_list) == 0:
                 # self.logger.info('No gt classes: %06d' % sample_id)
@@ -115,37 +117,37 @@ class KittiRCNNDataset(KittiDataset):
                                                                  len(self.image_idx_list)))
 
     def get_label(self, idx):
-        if idx < 10000:
-            label_file = os.path.join(self.label_dir, '%06d.txt' % idx)
-        else:
-            label_file = os.path.join(self.aug_label_dir, '%06d.txt' % idx)
+        # if idx < 10000:
+        label_file = os.path.join(self.label_dir, f'{idx}.txt')
+        # else:
+        #     label_file = os.path.join(self.aug_label_dir, f'{idx}.txt')
 
         assert os.path.exists(label_file)
         return kitti_utils.get_objects_from_label(label_file)
 
     def get_image(self, idx):
-        return super().get_image(idx % 10000)
+        return super().get_image(idx)
 
     def get_image_shape(self, idx):
-        return super().get_image_shape(idx % 10000)
+        return super().get_image_shape(idx)
 
     def get_calib(self, idx):
-        return super().get_calib(idx % 10000)
+        return super().get_calib(idx)
 
     def get_road_plane(self, idx):
-        return super().get_road_plane(idx % 10000)
+        return super().get_road_plane(idx)
 
     @staticmethod
     def get_rpn_features(rpn_feature_dir, idx):
-        rpn_feature_file = os.path.join(rpn_feature_dir, '%06d.npy' % idx)
-        rpn_xyz_file = os.path.join(rpn_feature_dir, '%06d_xyz.npy' % idx)
-        rpn_intensity_file = os.path.join(rpn_feature_dir, '%06d_intensity.npy' % idx)
+        rpn_feature_file = os.path.join(rpn_feature_dir, f'{idx}.npy')
+        rpn_xyz_file = os.path.join(rpn_feature_dir, f'{idx}_xyz.npy')
+        rpn_intensity_file = os.path.join(rpn_feature_dir, f'{idx}_intensity.npy')
         if cfg.RCNN.USE_SEG_SCORE:
-            rpn_seg_file = os.path.join(rpn_feature_dir, '%06d_rawscore.npy' % idx)
+            rpn_seg_file = os.path.join(rpn_feature_dir, f'{idx}_rawscore.npy')
             rpn_seg_score = np.load(rpn_seg_file).reshape(-1)
             rpn_seg_score = torch.sigmoid(torch.from_numpy(rpn_seg_score)).numpy()
         else:
-            rpn_seg_file = os.path.join(rpn_feature_dir, '%06d_seg.npy' % idx)
+            rpn_seg_file = os.path.join(rpn_feature_dir, f'{idx}_seg.npy')
             rpn_seg_score = np.load(rpn_seg_file).reshape(-1)
         return np.load(rpn_xyz_file), np.load(rpn_feature_file), np.load(rpn_intensity_file).reshape(-1), rpn_seg_score
 
@@ -244,25 +246,25 @@ class KittiRCNNDataset(KittiDataset):
             raise NotImplementedError
 
     def get_rpn_sample(self, index):
-        sample_id = int(self.sample_id_list[index])
-        if sample_id < 10000:
-            calib = self.get_calib(sample_id)
-            # img = self.get_image(sample_id)
-            img_shape = self.get_image_shape(sample_id)
-            pts_lidar = self.get_lidar(sample_id)
+        sample_id = self.sample_id_list[index]
+        # if sample_id != "10000":
+        calib = self.get_calib(sample_id)
+        # img = self.get_image(sample_id)
+        img_shape = self.get_image_shape(sample_id)
+        pts_lidar = self.get_lidar(sample_id)
 
-            # get valid point (projected points should be in image)
-            pts_rect = calib.lidar_to_rect(pts_lidar[:, 0:3])
-            pts_intensity = pts_lidar[:, 3]
-        else:
-            calib = self.get_calib(sample_id % 10000)
-            # img = self.get_image(sample_id % 10000)
-            img_shape = self.get_image_shape(sample_id % 10000)
+        # get valid point (projected points should be in image)
+        pts_rect = calib.lidar_to_rect(pts_lidar[:, 0:3])
+        pts_intensity = pts_lidar[:, 3]
+        # else:
+        #     calib = self.get_calib(sample_id % 10000)
+        #     # img = self.get_image(sample_id % 10000)
+        #     img_shape = self.get_image_shape(sample_id % 10000)
 
-            pts_file = os.path.join(self.aug_pts_dir, '%06d.bin' % sample_id)
-            assert os.path.exists(pts_file), '%s' % pts_file
-            aug_pts = np.fromfile(pts_file, dtype=np.float32).reshape(-1, 4)
-            pts_rect, pts_intensity = aug_pts[:, 0:3], aug_pts[:, 3]
+        #     pts_file = os.path.join(self.aug_pts_dir, f'{sample_id}.bin')
+        #     assert os.path.exists(pts_file), '%s' % pts_file
+        #     aug_pts = np.fromfile(pts_file, dtype=np.float32).reshape(-1, 4)
+        #     pts_rect, pts_intensity = aug_pts[:, 0:3], aug_pts[:, 3]
 
         pts_img, pts_rect_depth = calib.rect_to_img(pts_rect)
         pts_valid_flag = self.get_valid_flag(pts_rect, pts_img, pts_rect_depth, img_shape)
@@ -296,7 +298,7 @@ class KittiRCNNDataset(KittiDataset):
             else:
                 choice = np.arange(0, len(pts_rect), dtype=np.int32)
                 if self.npoints > len(pts_rect):
-                    extra_choice = np.random.choice(choice, self.npoints - len(pts_rect), replace=False)
+                    extra_choice = np.random.choice(choice, self.npoints - len(pts_rect), replace=True)
                     choice = np.concatenate((choice, extra_choice), axis=0)
                 np.random.shuffle(choice)
 
@@ -788,8 +790,8 @@ class KittiRCNNDataset(KittiDataset):
             raise NotImplementedError
 
     def get_proposal_from_file(self, index):
-        sample_id = int(self.image_idx_list[index])
-        proposal_file = os.path.join(self.rcnn_eval_roi_dir, '%06d.txt' % sample_id)
+        sample_id = self.image_idx_list[index]
+        proposal_file = os.path.join(self.rcnn_eval_roi_dir, f'{sample_id}.txt')
         roi_obj_list = kitti_utils.get_objects_from_label(proposal_file)
 
         rpn_xyz, rpn_features, rpn_intensity, seg_mask = self.get_rpn_features(self.rcnn_eval_feature_dir, sample_id)
@@ -1077,7 +1079,7 @@ class KittiRCNNDataset(KittiDataset):
         return roi_boxes3d, iou_of_rois
 
     def get_rcnn_sample_jit(self, index):
-        sample_id = int(self.sample_id_list[index])
+        sample_id = self.sample_id_list[index]
         rpn_xyz, rpn_features, rpn_intensity, seg_mask = \
             self.get_rpn_features(self.rcnn_training_feature_dir, sample_id)
 

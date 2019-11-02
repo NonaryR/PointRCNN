@@ -79,7 +79,7 @@ def save_kitti_format(sample_id, calib, bbox3d, kitti_output_dir, scores, img_sh
     img_boxes_h = img_boxes[:, 3] - img_boxes[:, 1]
     box_valid_mask = np.logical_and(img_boxes_w < img_shape[1] * 0.8, img_boxes_h < img_shape[0] * 0.8)
 
-    kitti_output_file = os.path.join(kitti_output_dir, '%06d.txt' % sample_id)
+    kitti_output_file = os.path.join(kitti_output_dir, f'{sample_id}.txt')
     with open(kitti_output_file, 'w') as f:
         for k in range(bbox3d.shape[0]):
             if box_valid_mask[k] == 0:
@@ -94,19 +94,19 @@ def save_kitti_format(sample_id, calib, bbox3d, kitti_output_dir, scores, img_sh
                    bbox3d[k, 6], scores[k]), file=f)
 
 
-def save_rpn_features(seg_result, rpn_scores_raw, pts_features, backbone_xyz, backbone_features, kitti_features_dir,
-                      sample_id):
+def save_rpn_features(seg_result, rpn_scores_raw, pts_features, backbone_xyz, 
+                      backbone_features, kitti_features_dir, sample_id):
     pts_intensity = pts_features[:, 0]
 
-    output_file = os.path.join(kitti_features_dir, '%06d.npy' % sample_id)
-    xyz_file = os.path.join(kitti_features_dir, '%06d_xyz.npy' % sample_id)
-    seg_file = os.path.join(kitti_features_dir, '%06d_seg.npy' % sample_id)
-    intensity_file = os.path.join(kitti_features_dir, '%06d_intensity.npy' % sample_id)
+    output_file = os.path.join(kitti_features_dir, f'{sample_id}.npy')
+    xyz_file = os.path.join(kitti_features_dir, f'{sample_id}_xyz.npy')
+    seg_file = os.path.join(kitti_features_dir, f'{sample_id}_seg.npy')
+    intensity_file = os.path.join(kitti_features_dir, f'{sample_id}_intensity.npy')
     np.save(output_file, backbone_features)
     np.save(xyz_file, backbone_xyz)
     np.save(seg_file, seg_result)
     np.save(intensity_file, pts_intensity)
-    rpn_scores_raw_file = os.path.join(kitti_features_dir, '%06d_rawscore.npy' % sample_id)
+    rpn_scores_raw_file = os.path.join(kitti_features_dir, f'{sample_id}_rawscore.npy')
     np.save(rpn_scores_raw_file, rpn_scores_raw)
 
 
@@ -314,7 +314,9 @@ def eval_one_epoch_rcnn(model, dataloader, epoch_id, result_dir, logger):
                                           num_head_bin=cfg.RCNN.NUM_HEAD_BIN,
                                           get_xz_fine=True, get_y_by_bin=cfg.RCNN.LOC_Y_BY_BIN,
                                           loc_y_scope=cfg.RCNN.LOC_Y_SCOPE, loc_y_bin_size=cfg.RCNN.LOC_Y_BIN_SIZE,
-                                          get_ry_fine=True)
+                                          get_ry_fine=True,
+                                        #   get_ry_fine=False,
+                                          )
 
         # scoring
         if rcnn_cls.shape[1] == 1:
@@ -409,16 +411,16 @@ def eval_one_epoch_rcnn(model, dataloader, epoch_id, result_dir, logger):
     image_idx_list = [x.strip() for x in open(split_file).readlines()]
     empty_cnt = 0
     for k in range(image_idx_list.__len__()):
-        cur_file = os.path.join(final_output_dir, '%s.txt' % image_idx_list[k])
+        cur_file = os.path.join(final_output_dir, f'{image_idx_list[k]}.txt')
         if not os.path.exists(cur_file):
             with open(cur_file, 'w') as temp_f:
                 pass
             empty_cnt += 1
-            logger.info('empty_cnt=%d: dump empty file %s' % (empty_cnt, cur_file))
+            logger.info(f'empty_cnt={empty_cnt}: dump empty file {cur_file}')
 
     ret_dict = {'empty_cnt': empty_cnt}
 
-    logger.info('-------------------performance of epoch %s---------------------' % epoch_id)
+    logger.info(f'-------------------performance of epoch {epoch_id}---------------------')
     logger.info(str(datetime.now()))
 
     avg_cls_acc = (total_cls_acc / max(cnt, 1.0))

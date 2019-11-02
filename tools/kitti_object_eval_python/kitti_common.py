@@ -331,16 +331,18 @@ def get_label_anno(label_path):
 def get_label_annos(label_folder, image_ids=None):
     if image_ids is None:
         filepaths = pathlib.Path(label_folder).glob('*.txt')
-        prog = re.compile(r'^\d{6}.txt$')
-        filepaths = filter(lambda f: prog.match(f.name), filepaths)
-        image_ids = [int(p.stem) for p in filepaths]
+        # prog = re.compile(r'^\d{6}.txt$')
+        # filepaths = filter(lambda f: prog.match(f.name), filepaths)
+        # image_ids = [int(p.stem) for p in filepaths]
+        image_ids = [p.stem.rstrip("\n") for p in filepaths]
         image_ids = sorted(image_ids)
     if not isinstance(image_ids, list):
         image_ids = list(range(image_ids))
     annos = []
     label_folder = pathlib.Path(label_folder)
     for idx in image_ids:
-        image_idx = get_image_index_str(idx)
+        # image_idx = get_image_index_str(idx)
+        image_idx = str(idx).rstrip("\n")
         label_filename = label_folder / (image_idx + '.txt')
         annos.append(get_label_anno(label_filename))
     return annos
