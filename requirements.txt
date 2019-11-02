@@ -1,3 +1,7 @@
 easydict
+fire
+numba
+scikit-image
+scipy
 tqdm
 tensorboardX
