@@ -3,9 +3,9 @@ import torch.nn as nn
 from lib.net.rpn import RPN
 from lib.net.rcnn_net import RCNNNet
 from lib.config import cfg
-import pdb
 
-pdb.set_trace()
+# import pdb
+# pdb.set_trace()
 
 class PointRCNN(nn.Module):
     def __init__(self, num_classes, use_xyz=True, mode='TRAIN'):
@@ -21,7 +21,7 @@ class PointRCNN(nn.Module):
             if cfg.RCNN.BACKBONE == 'pointnet':
                 self.rcnn_net = RCNNNet(num_classes=num_classes, input_channels=rcnn_input_channels, use_xyz=use_xyz)
             elif cfg.RCNN.BACKBONE == 'pointsift':
-                pass 
+                pass
             else:
                 raise NotImplementedError
 

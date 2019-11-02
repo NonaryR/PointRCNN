@@ -932,8 +932,8 @@ class KittiRCNNDataset(KittiDataset):
             bg_inds = self.sample_bg_inds(hard_bg_inds, easy_bg_inds, bg_rois_per_this_image)
             fg_rois_per_this_image = 0
         else:
-            import pdb
-            pdb.set_trace()
+#             import pdb
+#             pdb.set_trace()
             raise NotImplementedError
 
         # augment the rois by noise

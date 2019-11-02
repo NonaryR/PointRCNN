@@ -144,8 +144,8 @@ class ProposalTargetLayer(nn.Module):
 
                 fg_rois_per_this_image = 0
             else:
-                import pdb
-                pdb.set_trace()
+#                 import pdb
+#                 pdb.set_trace()
                 raise NotImplementedError
 
             # augment the rois by noise
