@@ -20,13 +20,16 @@ class GTDatabaseGenerator(KittiDataset):
         super().__init__(root_dir, split=split)
         self.gt_database = None
         if classes == 'Car':
-            self.classes = ('Background', 'Car')
+            # self.classes = ('Background', 'Car')
+            self.classes = ('background', 'car')
         elif classes == 'People':
             self.classes = ('Background', 'Pedestrian', 'Cyclist')
         elif classes == 'Pedestrian':
             self.classes = ('Background', 'Pedestrian')
         elif classes == 'Cyclist':
             self.classes = ('Background', 'Cyclist')
+        elif classes == "all":
+            self.classes = ("animal", "bicycle", "bus", "car", "emergency_vehicle", "motorcycle", "other_vehicle", "pedestiran", "truck")
         else:
             assert False, "Invalid classes: %s" % classes
 
@@ -50,15 +53,16 @@ class GTDatabaseGenerator(KittiDataset):
     def generate_gt_database(self):
         gt_database = []
         for idx, sample_id in enumerate(self.image_idx_list):
-            sample_id = int(sample_id)
-            print('process gt sample (id=%06d)' % sample_id)
+            # sample_id = int(sample_id)
+            print(f'process gt sample (id={sample_id})')
 
             pts_lidar = self.get_lidar(sample_id)
             calib = self.get_calib(sample_id)
             pts_rect = calib.lidar_to_rect(pts_lidar[:, 0:3])
             pts_intensity = pts_lidar[:, 3]
-
+            
             obj_list = self.filtrate_objects(self.get_label(sample_id))
+            # print(f"OBJ LIST: {obj_list}")
 
             gt_boxes3d = np.zeros((obj_list.__len__(), 7), dtype=np.float32)
             for k, obj in enumerate(obj_list):
@@ -83,7 +87,7 @@ class GTDatabaseGenerator(KittiDataset):
                                'obj': obj_list[k]}
                 gt_database.append(sample_dict)
 
-        save_file_name = os.path.join(args.save_dir, '%s_gt_database_3level_%s.pkl' % (args.split, self.classes[-1]))
+        save_file_name = os.path.join(args.save_dir, f'{args.split}_gt_database_3level_all_debug_val.pkl') #{self.classes[-1]}
         with open(save_file_name, 'wb') as f:
             pickle.dump(gt_database, f)
 
@@ -92,7 +96,7 @@ class GTDatabaseGenerator(KittiDataset):
 
 
 if __name__ == '__main__':
-    dataset = GTDatabaseGenerator(root_dir='../data/', split=args.split)
+    dataset = GTDatabaseGenerator(root_dir='/home/nonaryr/Documents/kaggle/lyft/data/debug-data/', split=args.split) #../data/
     os.makedirs(args.save_dir, exist_ok=True)
 
     dataset.generate_gt_database()

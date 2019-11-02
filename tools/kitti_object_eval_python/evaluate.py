@@ -1,14 +1,15 @@
-import time
+# import time
 import fire
 
 import tools.kitti_object_eval_python.kitti_common as kitti
-from tools.kitti_object_eval_python.eval import get_official_eval_result, get_coco_eval_result
+from tools.kitti_object_eval_python.eval import get_official_eval_result,\
+                                                get_coco_eval_result
 
 
 def _read_imageset_file(path):
     with open(path, 'r') as f:
         lines = f.readlines()
-    return [int(line) for line in lines]
+    return lines
 
 
 def evaluate(label_path,

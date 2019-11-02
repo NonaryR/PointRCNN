@@ -106,7 +106,7 @@ def load_part_ckpt(model, filename, logger=cur_logger, total_keys=-1):
         update_keys = update_model_state.keys().__len__()
         if update_keys == 0:
             raise RuntimeError
-        logger.info("==> Done (loaded %d/%d)" % (update_keys, total_keys))
+        logger.info(f"==> Done (loaded {update_keys}/{total_keys})")
     else:
         raise FileNotFoundError
 
@@ -216,7 +216,7 @@ class Trainer(object):
                 # save trained model
                 trained_epoch = epoch + 1
                 if trained_epoch % ckpt_save_interval == 0:
-                    ckpt_name = os.path.join(self.ckpt_dir, 'checkpoint_epoch_%d' % trained_epoch)
+                    ckpt_name = os.path.join(self.ckpt_dir, f'checkpoint_epoch_{trained_epoch}')
                     save_checkpoint(
                         checkpoint_state(self.model, self.optimizer, trained_epoch, it), filename=ckpt_name,
                     )

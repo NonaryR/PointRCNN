@@ -68,7 +68,7 @@ class AugSceneGenerator(KittiDataset):
         super().__init__(root_dir, split=split)
         self.gt_database = None
         if classes == 'Car':
-            self.classes = ('Background', 'Car')
+            self.classes = ('Background', 'car')
         elif classes == 'People':
             self.classes = ('Background', 'Pedestrian', 'Cyclist')
         elif classes == 'Pedestrian':
@@ -234,8 +234,8 @@ class AugSceneGenerator(KittiDataset):
 
     def aug_one_epoch_scene(self, base_id, data_save_dir, label_save_dir, split_list, log_fp=None):
         for idx, sample_id in enumerate(self.image_idx_list):
-            sample_id = int(sample_id)
-            print('process gt sample (%s, id=%06d)' % (args.split, sample_id))
+            # sample_id = int(sample_id)
+            print(f'process gt sample ({args.split}, id={sample_id})')
 
             pts_lidar = self.get_lidar(sample_id)
             calib = self.get_calib(sample_id)

@@ -25,35 +25,36 @@ class KittiDataset(torch_data.Dataset):
     def get_image(self, idx):
         assert False, 'DO NOT USE cv2 NOW, AVOID DEADLOCK'
         import cv2
-        # cv2.setNumThreads(0)  # for solving deadlock when switching epoch
-        img_file = os.path.join(self.image_dir, '%06d.png' % idx)
+        cv2.setNumThreads(0)  # for solving deadlock when switching epoch
+        img_file = os.path.join(self.image_dir, f'{idx}.png')
         assert os.path.exists(img_file)
         return cv2.imread(img_file)  # (H, W, 3) BGR mode
 
     def get_image_shape(self, idx):
-        img_file = os.path.join(self.image_dir, '%06d.png' % idx)
+        img_file = os.path.join(self.image_dir, f'{idx}.png')
         assert os.path.exists(img_file)
         im = Image.open(img_file)
         width, height = im.size
         return height, width, 3
 
     def get_lidar(self, idx):
-        lidar_file = os.path.join(self.lidar_dir, '%06d.bin' % idx)
+        lidar_file = os.path.join(self.lidar_dir, f'{idx}.bin')
         assert os.path.exists(lidar_file)
         return np.fromfile(lidar_file, dtype=np.float32).reshape(-1, 4)
 
     def get_calib(self, idx):
-        calib_file = os.path.join(self.calib_dir, '%06d.txt' % idx)
+        calib_file = os.path.join(self.calib_dir, f'{idx}.txt')
+        # print(f"CALIB: {calib_file}")
         assert os.path.exists(calib_file)
         return calibration.Calibration(calib_file)
 
     def get_label(self, idx):
-        label_file = os.path.join(self.label_dir, '%06d.txt' % idx)
+        label_file = os.path.join(self.label_dir, f'{idx}.txt')
         assert os.path.exists(label_file)
         return kitti_utils.get_objects_from_label(label_file)
 
     def get_road_plane(self, idx):
-        plane_file = os.path.join(self.plane_dir, '%06d.txt' % idx)
+        plane_file = os.path.join(self.plane_dir, f'{idx}.txt')
         with open(plane_file, 'r') as f:
             lines = f.readlines()
         lines = [float(i) for i in lines[3].split()]
